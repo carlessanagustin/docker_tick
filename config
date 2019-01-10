@@ -1,0 +1,8 @@
+INFLUX_USER = admin
+INFLUX_PASS = admin123
+
+CLIENT_USER = telegraf
+CLIENT_PASS = telegraf123
+
+HTUSER = admin
+HTPASS = test12345678

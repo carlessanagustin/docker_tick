@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  name: chronograf-ing
+  namespace: tick
+spec:
+  rules:
+    - host: example.com 
+      http:
+        paths:
+          - backend:
+              serviceName: chronograf
+              servicePort: 8888
+
+# more options: https://kubernetes.io/docs/concepts/services-networking/ingress/

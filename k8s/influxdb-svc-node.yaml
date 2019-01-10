@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.k8s.yml
+    kompose.version: 1.16.0 (0c01309)
+  labels:
+    io.kompose.service: influxdb
+  name: influxdb-external
+  namespace: tick
+spec:
+  type: NodePort
+  ports:
+  - name: "influxdb-external"
+    port: 8086
+    nodePort: 32086
+  selector:
+    io.kompose.service: influxdb

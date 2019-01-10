@@ -1,0 +1,76 @@
+dbrp "telegraf"."autogen"
+
+var db = 'telegraf'
+var rp = 'autogen'
+var measurement = 'system'
+var groupBy = []
+var whereFilter = lambda: TRUE
+var name = 'Server has just been restarted (system.uptime<0)'
+var idVar = name + ':{{.Group}}'
+
+
+var smtp_subject = '{{ .Level }} - {{ .ID }}'
+var smtp_body = '<b>{{ .ID }} is {{ .Level }} value: {{ index .Fields "value" }}</b>
+<ul>
+<li>Host: {{ index .Tags "host" }}</li>
+<li>Name: {{.Name}}</li>
+<li>Taskname: {{.TaskName}}</li>
+<li>Time: {{.Time}}</li>
+<li>Level: {{ .Level }}</li>
+<li>Group: {{.Group}}</li>
+<li>Tags: {{.Tags}}</li>
+</ul>
+<b>Monitoring platform:</b>
+<ul>
+<li>Host graphs: <a href="https://www.example.com/chronograf/sources/0/hosts/{{ index .Tags "host" }}">https://www.example.com/chronograf/sources/0/hosts/{{ index .Tags "host" }}</a></li>
+<li>Alert History: <a href="https://www.example.com/chronograf/sources/0/alerts">https://www.example.com/chronograf/sources/0/alerts</a></li>
+</ul>'
+var messageField = 'smtp_subject'
+
+
+var idTag = 'alertID'
+var levelTag = 'level'
+var durationField = 'duration'
+var outputDB = 'chronograf'
+var outputRP = 'autogen'
+var outputMeasurement = 'alerts'
+var triggerType = 'threshold'
+
+var crit = 0
+
+var data = stream
+    |from()
+        .database(db)
+        .retentionPolicy(rp)
+        .measurement(measurement)
+        .groupBy(groupBy)
+        .where(whereFilter)
+    |where(lambda: isPresent("uptime"))
+    |eval(lambda: "uptime")
+        .as('value')
+
+var trigger = data
+    |alert()
+        .crit(lambda: "value" < crit)
+        .stateChangesOnly()
+        .id(idVar)
+        .idTag(idTag)
+        .levelTag(levelTag)
+        .messageField(messageField)
+        .durationField(durationField)
+        .log('/logs/kapacitor_alerts.log')
+        .message(smtp_subject)
+        .details(smtp_body)
+        .email()
+
+trigger
+    |influxDBOut()
+        .create()
+        .database(outputDB)
+        .retentionPolicy(outputRP)
+        .measurement(outputMeasurement)
+        .tag('alertName', name)
+        .tag('triggerType', triggerType)
+
+trigger
+    |httpOut('output')

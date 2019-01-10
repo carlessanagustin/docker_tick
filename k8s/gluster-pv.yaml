@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: gluster-pv
+  namespace: tick
+  annotations:
+    #pv.beta.kubernetes.io/gid: "590"
+    pv.beta.kubernetes.io/gid: "0"
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  glusterfs:
+    endpoints: glusterfs-ep
+    path: tick_shared
+    readOnly: false
+  persistentVolumeReclaimPolicy: Retain

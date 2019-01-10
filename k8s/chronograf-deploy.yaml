@@ -1,0 +1,56 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.k8s.yml
+    kompose.version: 1.16.0 (0c01309)
+  labels:
+    io.kompose.service: chronograf
+  name: chronograf
+  namespace: tick
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: chronograf
+    spec:
+      containers:
+      - env:
+        #- name: BASE_PATH
+        #  value: /tick
+        - name: HOST
+          value: 0.0.0.0
+        - name: INFLUXDB_URL
+          value: https://influxdb:8086
+        - name: KAPACITOR_URL
+          value: http://kapacitor:9092
+        - name: PORT
+          value: "8888"
+        #- name: GOOGLE_CLIENT_ID
+        #  value: "GOOGLE_CLIENT_ID_value"
+        #- name: GOOGLE_CLIENT_SECRET
+        #  value: "GOOGLE_CLIENT_SECRET_value"
+        #- name: PUBLIC_URL
+        #  value: "PUBLIC_URL_value"
+        #- name: GOOGLE_DOMAINS
+        #  value: "GOOGLE_DOMAINS_value"
+        #- name: TOKEN_SECRET
+        #  value: "TOKEN_SECRET_value"
+        image: chronograf:1.5
+        name: chronograf
+        ports:
+        - containerPort: 8888
+        resources: {}
+        volumeMounts:
+        - name: tick-claim
+          mountPath: /var/lib/chronograf
+          subPath: var/lib/chronograf
+          readOnly: false
+      restartPolicy: Always
+      volumes:
+      - name: tick-claim
+        persistentVolumeClaim:
+          claimName: gluster-claim

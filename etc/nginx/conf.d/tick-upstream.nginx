@@ -1,0 +1,5 @@
+
+upstream chronograf {
+  least_conn;
+  server chronograf:8888 max_fails=5 fail_timeout=20 weight=10;
+}

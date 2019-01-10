@@ -1,0 +1,18 @@
+version: '3'
+
+networks:
+  tickdocker_public:
+    external: true
+
+services:
+  nginx:
+    image: nginx:1.12
+    volumes:
+      - ./etc/nginx/:/etc/nginx/
+      - ./certs/nginx:/etc/nginx/certs
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+    networks:
+      - tickdocker_public
